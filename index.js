@@ -1,6 +1,6 @@
 import { UltraHonkBackend } from '@aztec/bb.js';
 import { Noir } from '@noir-lang/noir_js';
-import circuit from "./circuit/target/circuit.json";
+import circuit from "./circuit/nonparametrical_tests.json";
 
 const show = (id, content) => {
     const container = document.getElementById(id);
@@ -8,21 +8,31 @@ const show = (id, content) => {
     container.appendChild(document.createElement("br"));
 };
 
+const dataset = [
+418,-430,-673,1008,-1180,1227,1331,-1598,1964,-2054,2870,-3040,3275,3292,-4092,-4129,-4212,-4319,4423,-4723,4748,-4789,5383,-5968,-6018,-6231,6419,-6463,6502,6653,6683,-6691,6723,6885,6900,-7345,-7455,-7475,-7627,7729,-7812,-7965,-8011,8236,-8377,8558,8769,8913,-8921,-9443,-10395,-10615,-10685,-10820,-10829,11013,12026,12071,-12225,-12557,12993,13115,-13563,-14472,14807,-15108,15772,17548,-17873,-18201,18665,-18759,-19263,19335,-19364,-19838,-19883,-20140,-20148,20299,-20536,20584,-20732,21088,21325,21377,21601,21773,21820,21871,-21898,-22089,22216,-22437,-22437,22793,-22806,-23064,23456,-24072,-24301,-24713,25169,25405,25710,26199,-26239,-26330,-27065,-27713,-28287,28344,-28570,-28679,29033,-29115,-29181,-29554,29808,29978,-30099,30309,-30615,-31260,-31603,-31753,31973,32239]
+;
+let hash = "0x2815ae70918e2300380e522f1b58a0da640f2d0f748a42cd573d3747ce989e0b";
+
 document.getElementById("submit").addEventListener("click", async () => {
     try {
         const noir = new Noir(circuit);
         const backend = new UltraHonkBackend(circuit.bytecode);
 
-        const age = document.getElementById("age").value;
+
         show("logs", "Generating witness... ⏳");
-        const { witness } = await noir.execute({ age });
+        const { witness } = await noir.execute( {
+            statistic_threshold: 4227,
+            dataset: dataset,
+            expected_root: hash
+        } );
+        console.log(witness);
         show("logs", "Generated witness... ✅");
         show("logs", "Generating proof... ⏳");
         const proof = await backend.generateProof(witness);
         show("logs", "Generated proof... ✅");
         show("results", proof.proof);
         show('logs', 'Verifying proof... ⌛');
-        const isValid = await backend.verifyProof(proof);
+        // const isValid = await backend.verifyProof(proof);
         show("logs", `Proof is ${isValid ? "valid" : "invalid"}... ✅`);
     } catch (e) {
         show("logs", "Oh 💔");
